@@ -4,23 +4,29 @@ using UnityEngine;
 
 public class CameraMotion : MonoBehaviour
 {
-    public GameObject main;
+    public GameObject cam;
     public Transform target;
     public float follow_speed;
 
-    public float main_z_index;
+    public float camera_z_index;
  
 
+
+    void Start()
+    {
+        cam = this.gameObject;
+    }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         FollowCamera();
+        Debug.Log(cam.transform.position);
     }
 
     void FollowCamera()
     {
-        Vector3 direction = new Vector3(target.position.x,target.position.y,main_z_index);
-        main.transform.position = Vector3.Lerp(main.transform.position, direction, follow_speed);
+        Vector3 direction = new Vector3(target.position.x,target.position.y,camera_z_index);
+        cam.transform.position = Vector3.Lerp(cam.transform.position, direction, follow_speed);
     }
 }
