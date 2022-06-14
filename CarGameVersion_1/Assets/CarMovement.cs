@@ -16,6 +16,8 @@ public class CarMovement : MonoBehaviour
     public float velocity = 0.0f;
     public float rotation;
     float horizontal;
+    public float turbo = 100;
+    bool turboOn;
     public bool onGround = true;
 
     private float movement;
@@ -30,6 +32,7 @@ public class CarMovement : MonoBehaviour
     void Update()
     {
         horizontal = Input.GetAxis("Horizontal");
+        turboOn = Input.GetKey("space");
         rotation = carBody.rotation;
     }
 
@@ -43,6 +46,7 @@ public class CarMovement : MonoBehaviour
         float targetSpeed;
         float accelRate;
         float rotationRate;
+        float speedCoef;
 
         onGround = fWheel.IsTouching(ground) || bWheel.IsTouching(ground) ? true : false;
 
@@ -57,19 +61,48 @@ public class CarMovement : MonoBehaviour
             targetSpeed = 0;
             Debug.Log("Im flying");
             accelRate = deccel * deccelInAir;
-            rotationRate = -(horizontal) * 60;
+            rotationRate = -(horizontal) * 150;
         }
-        float speedDiff = targetSpeed - carBody.velocity.x;
+        float speedDiff = targetSpeed - -(carBody.velocity.x);
 
         if(carBody.velocity.x > targetSpeed && targetSpeed > 0.01f || carBody.velocity.x < targetSpeed && targetSpeed < -0.01f || Mathf.Abs(rotation) > 8 && targetSpeed == 0)
         {
             accelRate = 0;
         }
 
-        float mov = Mathf.Pow(Mathf.Abs(speedDiff) * accelRate, 1.0f) * Mathf.Sign(speedDiff);
+        print(this.turboOn);
+        if(this.turboOn && Mathf.Abs(this.velocity) > 1.0f && this.turbo > 0)
+        {
+            speedCoef = Mathf.Lerp(1.0f, 1.4f, 0.2f);
+            this.updateTurbo(-1);
+        }
+        else if(this.turboOn && this.turbo == 0)
+        {
+            speedCoef = 1.0f;
+        }
+        else
+        {
+            speedCoef = 1.0f;
+            this.updateTurbo(1);
+        }
+
+        float mov = Mathf.Pow(Mathf.Abs(speedDiff) * accelRate, speedCoef) * Mathf.Sign(speedDiff);
 
         carBody.AddForce(mov * Vector2.right);
         transform.Rotate(new Vector3(0, 0, rotationRate) * Time.fixedDeltaTime);
         velocity = carBody.velocity.x;
+    }
+
+    void updateTurbo(int IncOrDec)
+    {
+        switch(IncOrDec)
+        {
+            case -1:
+                this.turbo -= (this.turbo >= 2) ? 2 : 0;
+                break;
+            case 1:
+               this.turbo += (this.turbo <= 90) ? 10 : 0;
+                break;
+        }
     }
 }
