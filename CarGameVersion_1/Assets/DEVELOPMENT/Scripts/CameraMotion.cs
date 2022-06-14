@@ -21,7 +21,6 @@ public class CameraMotion : MonoBehaviour
     void FixedUpdate()
     {
         FollowCamera();
-        Debug.Log(cam.transform.position);
     }
 
     void FollowCamera()

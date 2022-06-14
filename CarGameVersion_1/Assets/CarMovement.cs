@@ -16,6 +16,8 @@ public class CarMovement : MonoBehaviour
     public float velocity = 0.0f;
     public float rotation;
     float horizontal;
+    public float turbo = 100;
+    bool turboOn;
     public bool onGround = true;
 
     private float movement;
@@ -30,6 +32,7 @@ public class CarMovement : MonoBehaviour
     void Update()
     {
         horizontal = Input.GetAxis("Horizontal");
+        turboOn = Input.GetKey("space");
         rotation = carBody.rotation;
     }
 
@@ -43,12 +46,14 @@ public class CarMovement : MonoBehaviour
         float targetSpeed;
         float accelRate;
         float rotationRate;
+        float speedCoef;
 
         onGround = fWheel.IsTouching(ground) || bWheel.IsTouching(ground) ? true : false;
 
         if(onGround)
         {
             targetSpeed = horizontal * maxSpeed;
+            Debug.Log(targetSpeed);
             accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? accel : deccel;
             rotationRate = 0;
         }
@@ -59,11 +64,22 @@ public class CarMovement : MonoBehaviour
             accelRate = deccel * deccelInAir;
             rotationRate = -(horizontal) * 60;
         }
-        float speedDiff = targetSpeed - carBody.velocity.x;
+        float speedDiff = targetSpeed - -(carBody.velocity.x);
 
         if(carBody.velocity.x > targetSpeed && targetSpeed > 0.01f || carBody.velocity.x < targetSpeed && targetSpeed < -0.01f || Mathf.Abs(rotation) > 8 && targetSpeed == 0)
         {
             accelRate = 0;
+        }
+
+        if(this.turboOn)
+        {
+            speedCoef = 1.4f;
+            this.updateTurbo(-1);
+        }
+        else
+        {
+            speedCoef = 1.0f;
+            this.updateTurbo(1);
         }
 
         float mov = Mathf.Pow(Mathf.Abs(speedDiff) * accelRate, 1.0f) * Mathf.Sign(speedDiff);
@@ -71,5 +87,18 @@ public class CarMovement : MonoBehaviour
         carBody.AddForce(mov * Vector2.right);
         transform.Rotate(new Vector3(0, 0, rotationRate) * Time.fixedDeltaTime);
         velocity = carBody.velocity.x;
+    }
+
+    void updateTurbo(int IncOrDec)
+    {
+        switch(IncOrDec)
+        {
+            case -1:
+                this.turbo -= (this.turbo >= 2) ? 2 : 0;
+                break;
+            case 1:
+               this.turbo += (this.turbo <= 90) ? 10 : 0;
+                break;
+        }
     }
 }
