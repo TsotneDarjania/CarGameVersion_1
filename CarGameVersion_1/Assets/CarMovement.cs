@@ -53,7 +53,6 @@ public class CarMovement : MonoBehaviour
         if(onGround)
         {
             targetSpeed = horizontal * maxSpeed;
-            Debug.Log(targetSpeed);
             accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? accel : deccel;
             rotationRate = 0;
         }
@@ -62,7 +61,7 @@ public class CarMovement : MonoBehaviour
             targetSpeed = 0;
             Debug.Log("Im flying");
             accelRate = deccel * deccelInAir;
-            rotationRate = -(horizontal) * 60;
+            rotationRate = -(horizontal) * 150;
         }
         float speedDiff = targetSpeed - -(carBody.velocity.x);
 
@@ -71,10 +70,15 @@ public class CarMovement : MonoBehaviour
             accelRate = 0;
         }
 
-        if(this.turboOn)
+        print(this.turboOn);
+        if(this.turboOn && Mathf.Abs(this.velocity) > 1.0f && this.turbo > 0)
         {
-            speedCoef = 1.4f;
+            speedCoef = Mathf.Lerp(1.0f, 1.4f, 0.2f);
             this.updateTurbo(-1);
+        }
+        else if(this.turboOn && this.turbo == 0)
+        {
+            speedCoef = 1.0f;
         }
         else
         {
@@ -82,7 +86,7 @@ public class CarMovement : MonoBehaviour
             this.updateTurbo(1);
         }
 
-        float mov = Mathf.Pow(Mathf.Abs(speedDiff) * accelRate, 1.0f) * Mathf.Sign(speedDiff);
+        float mov = Mathf.Pow(Mathf.Abs(speedDiff) * accelRate, speedCoef) * Mathf.Sign(speedDiff);
 
         carBody.AddForce(mov * Vector2.right);
         transform.Rotate(new Vector3(0, 0, rotationRate) * Time.fixedDeltaTime);
